@@ -111,6 +111,13 @@ export default {
       return Math.floor(Math.random() * (Math.floor(max) - Math.ceil(min))) + Math.ceil(min);
     },
     monsterAttack() {
+      if (this.slimeHealth <= 0) {
+        this.log.unshift('you won!');
+        const vm = this;
+        setTimeout(() => {
+          vm.running = false;
+        }, 2500);
+      }
       let damage = this.getDamage(9, 16) - this.defend;
       this.log.unshift(`the slime slimes the sword for ${damage} damage`);
       this.swordHealth -= damage;
