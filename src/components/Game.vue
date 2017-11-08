@@ -1,100 +1,22 @@
 <template lang="pug">
-section.game
-  transition(name='fade', mode='out-in')
-    .container.columns(v-if='!running', key='menu')
-          .column.col-4
-            ul.menu
-              li.divider(data-content='slimeslayer')
-              li.menu-item click the button to begin
-              li.menu-item
-                button.btn.btn-lg(@click='startGame') start game
-    .container(v-else, key='game')
-      section.slimes
-        .container.columns
-          .column.col-3.col-mx-auto
-            .slime.animated.infinite(:class='slimeAnimation')
-          .column.col-3.col-ml-auto
-            ul.menu
-              li.divider(:data-content='slimeName')
-              li.menu-item status: {{ slimeStatus }}
-              li.menu-item
-                progress.progress(:value='slimeHealth', max='200')
-                sup sp: {{ slimeHealth }} / 200
-      section.players
-        .container.columns
-          .column.col-3
-            ul.menu
-              li.divider(data-content='knight')
-              .columns
-                .column
-                  li.menu-item
-                    button.btn(@click='attack', :disabled='knightInactive') attack
-                  li.menu-item
-                    button.btn(@click='defend', :disabled='knightInactive') defend
-                .column
-                  li.menu-item
-                    button.btn(@click='charge', :disabled='knightInactive') charge attack
-                  li.menu-item
-                    button.btn(@click='run', :disabled='knightInactive') run
-              li.menu-item
-                progress.progress(:value='knightHealth', max='100')
-                sup hp: {{ knightHealth }} / 100
-          .column.col-3
-            ul.menu
-              li.divider(data-content='mage')
-              .columns
-                .column
-                  li.menu-item
-                    button.btn(@click='magic', :disabled='mageInactive') magic
-                  li.menu-item
-                    button.btn(@click='heal', :disabled='mageInactive') heal
-                .column
-                  li.menu-item
-                    button.btn(@click='burst', :disabled='mageInactive') burst attack
-                  li.menu-item
-                    button.btn(@click='run', :disabled='mageInactive') run
-              li.menu-item
-                progress.progress(:value='mageHealth', max='100')
-                sup hp: {{ mageHealth }} / 100
-      section.log
-        .container
-          .panel.bg-gray
-            .panel-body
-              ul
-                template(v-for='line in log')
-                  li(:class=
-                    '{ "text-success": line.good, "text-error": !line.good }') {{ line.message }}
+.container
+  Slimes
+  Players
+  Log
 </template>
 
 <script>
-// slime names and statuses
-const slims = [
-  'slimy',
-  'slippy',
-  'sloppy',
-  'spoopy',
-  'sploppy',
-  'slemmy',
-];
-const slems = [
-  'slimer',
-  'slipper',
-  'slopper',
-  'spooper',
-  'splopper',
-  'slemmer',
-];
-const statuses = [
-  'slimeful',
-  'drooping',
-  'hungry',
-  'scared',
-  'peaceful',
-  'energetic',
-];
+import Slimes from './Slimes.vue';
+import Players from './Players.vue';
+import Log from './Log.vue';
 
 export default {
   name: 'Game',
+  components: {
+    Slimes,
+    Players,
+    Log,
+  },
   data() {
     return {
       running: false,
