@@ -1,2 +1,0 @@
-# slimeslayer
-slay some slimes!!
