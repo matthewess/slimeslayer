@@ -1,9 +1,16 @@
 <template lang="pug">
 section.game
-  .container
-    section.slimes
-      transition(name='fade')
-        .container.columns(v-if='running')
+  transition(name='fade', mode='out-in')
+    .container.columns(v-if='!running', key='menu')
+          .column.col-4
+            ul.menu
+              li.divider(data-content='slimeslayer')
+              li.menu-item click the button to begin
+              li.menu-item
+                button.btn.btn-lg(@click='startGame') start game
+    .container(v-else, key='game')
+      section.slimes
+        .container.columns
           .column.col-3.col-mx-auto
             .slime.animated.infinite(:class='slimeAnimation')
           .column.col-3.col-ml-auto
@@ -13,16 +20,8 @@ section.game
               li.menu-item
                 progress.progress(:value='slimeHealth', max='200')
                 sup sp: {{ slimeHealth }} / 200
-    section.players
-      .container.columns(v-if='!running')
-        .column.col-4
-          ul.menu
-            li.divider(data-content='slimeslayer')
-            li.menu-item click the button to begin
-            li.menu-item
-              button.btn.btn-lg(@click='startGame') start game
-      transition(name='fade')
-        .container.columns(v-if='running')
+      section.players
+        .container.columns
           .column.col-3
             ul.menu
               li.divider(data-content='knight')
@@ -57,14 +56,14 @@ section.game
               li.menu-item
                 progress.progress(:value='mageHealth', max='100')
                 sup hp: {{ mageHealth }} / 100
-    section.log
-      .container(v-if='running')
-        .panel.bg-gray
-          .panel-body
-            ul
-              template(v-for='line in log')
-                li(:class=
-                  '{ "text-success": line.good, "text-error": !line.good }') {{ line.message }}
+      section.log
+        .container
+          .panel.bg-gray
+            .panel-body
+              ul
+                template(v-for='line in log')
+                  li(:class=
+                    '{ "text-success": line.good, "text-error": !line.good }') {{ line.message }}
 </template>
 
 <script>
@@ -122,6 +121,7 @@ export default {
       return Math.floor(Math.random() * (Math.floor(max) - Math.ceil(min))) + Math.ceil(min);
     },
     monsterAttack() {
+      if (this.slimeHealth <= 0) return;
       // calculate monster damage
       let damage = this.getDamage(9, 16) - this.defense;
       this.log.unshift({ message: `the slime slimes the knight for ${damage} damage`, good: false });
@@ -280,7 +280,7 @@ li
   list-style: none
 
 .fade-enter-active, .fade-leave-active
-  transition: opacity 2s
+  transition: opacity .5s
 .fade-enter, .fade-leave-to
   opacity: 0
 </style>
