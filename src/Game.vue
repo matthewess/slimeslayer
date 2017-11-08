@@ -99,8 +99,9 @@ export default {
       slimeHealth: 200,
       slimeName: '',
       slimeStatus: '',
-      defend: 0,
+      defense: 0,
       log: [],
+      disabled: false,
     };
   },
   methods: {
@@ -111,25 +112,19 @@ export default {
       return Math.floor(Math.random() * (Math.floor(max) - Math.ceil(min))) + Math.ceil(min);
     },
     monsterAttack() {
-      if (this.slimeHealth <= 0) {
-        this.log.unshift('you won!');
-        const vm = this;
-        setTimeout(() => {
-          vm.running = false;
-        }, 2500);
-      }
-      let damage = this.getDamage(9, 16) - this.defend;
+      let damage = this.getDamage(9, 16) - this.defense;
       this.log.unshift(`the slime slimes the sword for ${damage} damage`);
       this.swordHealth -= damage;
-      damage = this.getDamage(9, 16) - this.defend;
+      damage = this.getDamage(9, 16) - this.defense;
       this.log.unshift(`the slime slimes the staff for ${damage} damage`);
       this.staffHealth -= damage;
       this.swordDelay -= 1;
       this.staffDelay -= 1;
-      this.defend = 0;
+      this.defense = 0;
     },
     startGame() {
       this.running = true;
+      this.log = [];
       this.log.unshift('a wild slime appears!');
       const slim = this.random(slims);
       const slem = this.random(slems);
@@ -150,7 +145,7 @@ export default {
     defend() {
       const defend = this.getDamage(5, 15);
       this.log.unshift(`sword prepares to guard for ${defend} damage`);
-      this.defend = defend;
+      this.defense = defend;
       this.swordDelay = 1;
     },
     charge() {
@@ -187,32 +182,54 @@ export default {
       this.staffDelay = 2;
     },
     run() {
-      this.running = false;
-      this.log = [];
+      this.log.unshift('you ran away...');
+      this.end();
+    },
+    end() {
+      this.disabled = true;
+      const vm = this;
+      setTimeout(() => {
+        this.log = [];
+        vm.running = false;
+      }, 5000);
     },
   },
   computed: {
     swordInactive() {
-      return this.swordDelay > 0 || this.swordHealth <= 0;
+      return this.swordDelay > 0 || this.swordHealth <= 0 || this.disabled;
     },
     staffInactive() {
-      return this.staffDelay > 0 || this.staffHealth <= 0;
+      return this.staffDelay > 0 || this.staffHealth <= 0 || this.disabled;
     },
     bothInactive() {
       return this.staffInactive && this.swordInactive;
     },
+    won() {
+      return this.slimeHealth <= 0;
+    },
+    lost() {
+      return this.swordHealth <= 0 && this.staffHealth <= 0;
+    },
   },
   watch: {
     bothInactive(val) {
-      if (this.swordHealth <= 0 && this.staffHealth <= 0) {
-        this.running = false;
-        this.log = [];
-      }
       if (val) {
         while (this.bothInactive) {
           this.slimeStatus = this.random(statuses);
           this.monsterAttack();
         }
+      }
+    },
+    lost(val) {
+      if (val) {
+        this.log.unshift('you lost...');
+        this.end();
+      }
+    },
+    won(val) {
+      if (val) {
+        this.log.unshift('you won!!!');
+        this.end();
       }
     },
   },
