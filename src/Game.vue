@@ -2,16 +2,17 @@
 section.game
   .container
     section.slimes
-      .container.columns(v-if='running')
-        .column.col-3.col-mx-auto
-          .slime.animated.infinite(:class='{ rubberBand: slimeHealth >= 0 }')
-        .column.col-3.col-ml-auto
-          ul.menu
-            li.divider(:data-content='slimeName')
-            li.menu-item status: {{ slimeStatus }}
-            li.menu-item
-              progress.progress(:value='slimeHealth', max='200')
-              sup sp: {{ slimeHealth }} / 200
+      transition(name='fade')
+        .container.columns(v-if='running')
+          .column.col-3.col-mx-auto
+            .slime.animated.infinite(:class='slimeAnimation')
+          .column.col-3.col-ml-auto
+            ul.menu
+              li.divider(:data-content='slimeName')
+              li.menu-item status: {{ slimeStatus }}
+              li.menu-item
+                progress.progress(:value='slimeHealth', max='200')
+                sup sp: {{ slimeHealth }} / 200
     section.players
       .container.columns(v-if='!running')
         .column.col-4
@@ -20,48 +21,50 @@ section.game
             li.menu-item click the button to begin
             li.menu-item
               button.btn.btn-lg(@click='startGame') start game
-      .container.columns(v-if='running')
-        .column.col-3
-          ul.menu
-            li.divider(data-content='knight')
-            .columns
-              .column
-                li.menu-item
-                  button.btn(@click='attack', :disabled='knightInactive') attack
-                li.menu-item
-                  button.btn(@click='defend', :disabled='knightInactive') defend
-              .column
-                li.menu-item
-                  button.btn(@click='charge', :disabled='knightInactive') charge attack
-                li.menu-item
-                  button.btn(@click='run', :disabled='knightInactive') run
-            li.menu-item
-              progress.progress(:value='knightHealth', max='100')
-              sup hp: {{ knightHealth }} / 100
-        .column.col-3
-          ul.menu
-            li.divider(data-content='mage')
-            .columns
-              .column
-                li.menu-item
-                  button.btn(@click='magic', :disabled='mageInactive') magic
-                li.menu-item
-                  button.btn(@click='heal', :disabled='mageInactive') heal
-              .column
-                li.menu-item
-                  button.btn(@click='burst', :disabled='mageInactive') burst attack
-                li.menu-item
-                  button.btn(@click='run', :disabled='mageInactive') run
-            li.menu-item
-              progress.progress(:value='mageHealth', max='100')
-              sup hp: {{ mageHealth }} / 100
+      transition(name='fade')
+        .container.columns(v-if='running')
+          .column.col-3
+            ul.menu
+              li.divider(data-content='knight')
+              .columns
+                .column
+                  li.menu-item
+                    button.btn(@click='attack', :disabled='knightInactive') attack
+                  li.menu-item
+                    button.btn(@click='defend', :disabled='knightInactive') defend
+                .column
+                  li.menu-item
+                    button.btn(@click='charge', :disabled='knightInactive') charge attack
+                  li.menu-item
+                    button.btn(@click='run', :disabled='knightInactive') run
+              li.menu-item
+                progress.progress(:value='knightHealth', max='100')
+                sup hp: {{ knightHealth }} / 100
+          .column.col-3
+            ul.menu
+              li.divider(data-content='mage')
+              .columns
+                .column
+                  li.menu-item
+                    button.btn(@click='magic', :disabled='mageInactive') magic
+                  li.menu-item
+                    button.btn(@click='heal', :disabled='mageInactive') heal
+                .column
+                  li.menu-item
+                    button.btn(@click='burst', :disabled='mageInactive') burst attack
+                  li.menu-item
+                    button.btn(@click='run', :disabled='mageInactive') run
+              li.menu-item
+                progress.progress(:value='mageHealth', max='100')
+                sup hp: {{ mageHealth }} / 100
     section.log
       .container(v-if='running')
         .panel.bg-gray
           .panel-body
             ul
               template(v-for='line in log')
-                li(:class='{ "text-success": line.good, "text-error": !line.good }') {{ line.message }}
+                li(:class=
+                  '{ "text-success": line.good, "text-error": !line.good }') {{ line.message }}
 </template>
 
 <script>
@@ -106,6 +109,7 @@ export default {
       defense: 0,
       log: [],
       disabled: false,
+      slimeAnimation: 'rubberBand',
     };
   },
   methods: {
@@ -149,10 +153,15 @@ export default {
       this.mageDelay = 0;
     },
     attack() {
+      this.slimeAnimation = 'shake';
       const damage = this.getDamage(5, 9);
       this.log.unshift({ message: `knight deals ${damage} damage to the slime`, good: true });
       this.slimeHealth -= damage;
       this.knightDelay = 1;
+      const vm = this;
+      setTimeout(() => {
+        vm.slimeAnimation = 'rubberBand';
+      }, 1000);
     },
     defend() {
       const defend = this.getDamage(5, 15);
@@ -161,17 +170,27 @@ export default {
       this.knightDelay = 1;
     },
     charge() {
+      this.slimeAnimation = 'shake';
       const damage = this.getDamage(10, 25);
       this.log.unshift({ message: `knight charges for ${damage} damage to the slime!`, good: true });
       this.slimeHealth -= damage;
       this.knightDelay = 2;
       this.log.unshift({ message: 'the knight is worn out from charging...', good: false });
+      const vm = this;
+      setTimeout(() => {
+        vm.slimeAnimation = 'rubberBand';
+      }, 1000);
     },
     magic() {
+      this.slimeAnimation = 'wobble';
       const damage = this.getDamage(4, 12);
       this.log.unshift({ message: `mage deals ${damage} damage to the slime`, good: true });
       this.slimeHealth -= damage;
       this.mageDelay = 1;
+      const vm = this;
+      setTimeout(() => {
+        vm.slimeAnimation = 'rubberBand';
+      }, 1000);
     },
     heal() {
       const heal = this.getDamage(5, 15);
@@ -189,11 +208,16 @@ export default {
       this.mageDelay = 1;
     },
     burst() {
+      this.slimeAnimation = 'wobble';
       const damage = this.getDamage(10, 25);
       this.log.unshift({ message: `mage bursts for ${damage} damage to the slime!`, good: true });
       this.slimeHealth -= damage;
       this.mageDelay = 2;
       this.log.unshift({ message: 'the mage is worn out from bursting...', good: false });
+      const vm = this;
+      setTimeout(() => {
+        vm.slimeAnimation = 'rubberBand';
+      }, 1000);
     },
     run() {
       this.end({ message: 'you ran away...', good: false });
@@ -230,6 +254,7 @@ export default {
     },
     slimeHealth(val) {
       if (val <= 0) {
+        this.slimeStatus = 'dead';
         this.end({ message: 'you won!!!', good: true });
       }
     },
@@ -239,8 +264,8 @@ export default {
 
 <style lang="sass" scoped>
 .slime
-  width: 136px
-  height: 190px
+  width: 120px
+  height: 180px
   background: radial-gradient(#50C9C3, #96DEDA)
   display: block
   border-radius: 60% 60% 60% 60% / 90% 90% 30% 30%
@@ -253,4 +278,9 @@ export default {
   margin: 15px
 li
   list-style: none
+
+.fade-enter-active, .fade-leave-active
+  transition: opacity 2s
+.fade-enter, .fade-leave-to
+  opacity: 0
 </style>
